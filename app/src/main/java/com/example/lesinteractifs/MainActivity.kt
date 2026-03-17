@@ -18,9 +18,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocal
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,82 +52,99 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
+@OptIn(ExperimentalStdlibApi::class)
 @Composable
 fun Body(modifier: Modifier = Modifier) {
     var nameString by remember { mutableStateOf("") }
     var surnameString by remember { mutableStateOf("") }
-    val modifier= Modifier
-        .padding(16.dp)
-        .fillMaxWidth()
-    val manager = LocalFocusManager
 
-    Column(
-        modifier = modifier.padding(12.dp)
+    // Gestionnaire de focus - correction ici
+    val focusManager = LocalFocusManager.current
+
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        onClick = { focusManager.clearFocus() }  // Correction ici
     ) {
-        NameTextFild(
-            nameString = nameString,
-            onNameChanded = { nameString = it },
+        Column(
             modifier = Modifier
-        )
+                .padding(12.dp)
+                .fillMaxWidth()
+        ) {
+            NameTextFild(
+                nameString = nameString,
+                onNameChanded = { nameString = it },
+                modifier = Modifier
+            )
 
-        SurnameTextField(
-            surname = surnameString,
-            onChanded = { surnameString = it }
-        )
+            SurnameTextField(
+                surname = surnameString,
+                onChanded = { surnameString = it }
+            )
+        }
     }
 }
 
 @Composable
 fun SurnameTextField(surname: String, onChanded: (String) -> Unit) {
+    val error = (surname.isEmpty() || surname.length < 3)
+    val errorMessage = when {
+        surname.isEmpty() -> "Le prénom ne peut pas être vide"
+        surname.length < 3 -> "Le prénom est trop court (minimum 3 caractères)"
+        else -> ""
+    }
 
-    val error =(surname== "" || surname.length<3)
-
-    OutlinedTextField(
-        value = surname,
-        onValueChange = onChanded,
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp),
-        label = { Text("Votre prénom") },
-        singleLine = true,
-        placeholder = {
-            Text(text = "Nom inconnu")
-        },
-        isError = error,
-
-                leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = null
-            )
-        },
-        trailingIcon = {
-            IconButton(onClick = { print("Click") }) {
+            .padding(12.dp)
+    ) {
+        OutlinedTextField(
+            value = surname,
+            onValueChange = onChanded,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Votre prénom") },
+            singleLine = true,
+            placeholder = { Text("Prénom inconnu") },
+            isError = error,
+            leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = null,
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null
                 )
-            }
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text
+            },
+            trailingIcon = {
+                IconButton(onClick = { print("Click") }) {
+                    Icon(
+                        imageVector = Icons.Default.Send,
+                        contentDescription = null,
+                    )
+                }
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done
+            )
         )
-    )
 
-    if (error){
-        Text(
-            text = "Prénom est trop court",
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.error
-        )
+        if (error) {
+            Text(
+                text = errorMessage,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
     }
 }
 
 @Composable
-fun NameTextFild(modifier: Modifier, nameString: String, onNameChanded: (String) -> Unit
+fun NameTextFild(
+    modifier: Modifier,
+    nameString: String,
+    onNameChanded: (String) -> Unit
 ) {
-    val manager=LocalFocusManager.current
+    val manager = LocalFocusManager.current
+
     TextField(
         value = nameString,
         onValueChange = onNameChanded,
@@ -134,9 +153,7 @@ fun NameTextFild(modifier: Modifier, nameString: String, onNameChanded: (String)
             .padding(12.dp),
         label = { Text("Entrer votre nom") },
         singleLine = true,
-        placeholder = {
-            Text(text = "Nom inconnu")
-        },
+        placeholder = { Text("Nom inconnu") },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Person,
@@ -151,21 +168,29 @@ fun NameTextFild(modifier: Modifier, nameString: String, onNameChanded: (String)
                 )
             }
         },
-        isError = (nameString == ""),
+        isError = nameString.isEmpty(),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
-            // Actions du TextFeild(keybord actions
-            // qui permettent de fermer notre clavier
-            imeAction= ImeAction.Next// qui permet de passe au TextFeild suivant
+            imeAction = ImeAction.Next
         ),
-        // Definir une action
         keyboardActions = KeyboardActions(
             onNext = {
                 manager.moveFocus(FocusDirection.Down)
             }
         )
     )
+
+    if (nameString.isEmpty()) {
+        Text(
+            text = "Le nom ne peut pas être vide",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier.padding(start = 24.dp, top = 4.dp)
+        )
+    }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable
