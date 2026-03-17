@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -68,17 +70,22 @@ fun Body(modifier: Modifier = Modifier) {
 
 @Composable
 fun SurnameTextField(surname: String, onChanded: (String) -> Unit) {
+
+    val error =(surname== "" || surname.length<3)
+
     OutlinedTextField(
         value = surname,
         onValueChange = onChanded,
         modifier = Modifier
             .fillMaxWidth()
             .padding(12.dp),
-        label = { Text("Entrer votre prénom") },
+        label = { Text("Votre prénom") },
         singleLine = true,
         placeholder = {
             Text(text = "Nom inconnu")
         },
+        isError = error,
+
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Person,
@@ -93,11 +100,18 @@ fun SurnameTextField(surname: String, onChanded: (String) -> Unit) {
                 )
             }
         },
-        isError = (surname == ""),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text
         )
     )
+    if (error){
+        Text(
+            text = "Prénom est trop court",
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.error
+        )
+
+    }
 }
 
 @Composable
