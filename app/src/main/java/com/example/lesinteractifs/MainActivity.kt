@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -25,7 +26,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,6 +55,10 @@ class MainActivity : ComponentActivity() {
 fun Body(modifier: Modifier = Modifier) {
     var nameString by remember { mutableStateOf("") }
     var surnameString by remember { mutableStateOf("") }
+    val modifier= Modifier
+        .padding(16.dp)
+        .fillMaxWidth()
+    val manager = LocalFocusManager
 
     Column(
         modifier = modifier.padding(12.dp)
@@ -86,7 +94,7 @@ fun SurnameTextField(surname: String, onChanded: (String) -> Unit) {
         },
         isError = error,
 
-        leadingIcon = {
+                leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = null
@@ -104,19 +112,20 @@ fun SurnameTextField(surname: String, onChanded: (String) -> Unit) {
             keyboardType = KeyboardType.Text
         )
     )
+
     if (error){
         Text(
             text = "Prénom est trop court",
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.error
         )
-
     }
 }
 
 @Composable
 fun NameTextFild(modifier: Modifier, nameString: String, onNameChanded: (String) -> Unit
 ) {
+    val manager=LocalFocusManager.current
     TextField(
         value = nameString,
         onValueChange = onNameChanded,
@@ -144,7 +153,16 @@ fun NameTextFild(modifier: Modifier, nameString: String, onNameChanded: (String)
         },
         isError = (nameString == ""),
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text
+            keyboardType = KeyboardType.Text,
+            // Actions du TextFeild(keybord actions
+            // qui permettent de fermer notre clavier
+            imeAction= ImeAction.Next// qui permet de passe au TextFeild suivant
+        ),
+        // Definir une action
+        keyboardActions = KeyboardActions(
+            onNext = {
+                manager.moveFocus(FocusDirection.Down)
+            }
         )
     )
 }
